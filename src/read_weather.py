@@ -2,8 +2,9 @@ import pandas as pd
 import numpy as np
 
 def read_weather_data(path):
-    """ Takes in a path to a yearly data_frame,
-        puts out a clean data frame
+    """ Takes in a path to a yearly .csv,
+        returns a data frame with subset data
+        PRECIP, SNOW, TMAX, TMIN
     """
     df = pd.read_csv(path, header=None, index_col=False,
                     names=['station_id',
@@ -19,7 +20,8 @@ def read_weather_data(path):
 
 def read_metadata_txt(path):
     """Takes in the path to the metadata
-    returns a dataframe of meta data
+    Returns Data frame with:
+    STATION ID, LATITUDE, LONGITUDE, ELEVATION
     """
     df = pd.read_csv(path,
                            sep='\s+',  # Fields are separated by one or more spaces
