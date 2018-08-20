@@ -10,7 +10,7 @@ def get_average_per_state(meta_data,weather_data, state):
     state_set = set(one_state['station_id'])
     weather_set=set(weather_data['station_id'])
     intersection_list = list(weather_set& state_set)
-
+    print(f'There are {len(intersection_list)} stations in the state of {state}')
     all_stations_in_state= weather_data[weather_data['station_id'].isin(intersection_list)]
 
 

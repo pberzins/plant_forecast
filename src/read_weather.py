@@ -6,7 +6,7 @@ def read_weather_data(path):
         returns a data frame with subset data
         PRECIP, SNOW, TMAX, TMIN
     """
-    df = pd.read_csv(path, header=None, index_col=False,
+    df = pd.read_csv(path, compression='infer', header=None, index_col=False,
                     names=['station_id',
                             'measurement_date',
                             'measurement_type',
