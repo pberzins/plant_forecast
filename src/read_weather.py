@@ -15,6 +15,7 @@ def read_weather_data(path):
                             'source_flag',
                             'observation_time'],
                            parse_dates=['measurement_date'])
+    df=df[pd.isna(df['quality_flag'])]
     weather_data_subset = df[df.measurement_type.isin(['PRCP', 'SNOW', 'SNWD', 'TMAX', 'TMIN'])][['station_id', 'measurement_date', 'measurement_type', 'measurement_flag']]
     return weather_data_subset
 
