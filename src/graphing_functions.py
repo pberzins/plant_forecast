@@ -1,3 +1,6 @@
+import pandas as pd
+import numpy as np
+
 def get_average_per_state(meta_data,weather_data, state):
     """Takes in the meta_data_df, and weather_data, and a state,
         returns averages per state on a julian day basis
@@ -20,7 +23,5 @@ def get_julian_day_column(df):
     """Takes in a data frame,
     adds a julian day column
     """
-    df['julian']= graph.index.to_julian_date()
+    df['julian']= df.index.to_julian_date()
     return df
-
-    
