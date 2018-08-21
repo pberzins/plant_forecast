@@ -31,3 +31,9 @@ def read_metadata_txt(path):
                            header=None,
                            names=['station_id', 'latitude', 'longitude', 'elevation', 'state'])
     return df
+
+def make_clean_csv(panda_df, dest_path_name):
+    """Takes in a pandas df, a dest_path, and a name for file
+    """
+    panda_df.to_csv(dest_path_name, sep=',')
+    return True 
