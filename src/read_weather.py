@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from collections import defaultdict
 
 def read_weather_data(path):
     """ Takes in a path to a yearly .csv,
@@ -36,4 +37,17 @@ def make_clean_csv(panda_df, dest_path_name):
     """Takes in a pandas df, a dest_path, and a name for file
     """
     panda_df.to_csv(dest_path_name, sep=',')
-    return True 
+    return True
+
+def station_id_lookup(df):
+    """Takes in a data frame
+    returns a dictionary with the keys as station_id,
+    lat, long, elevation, and state as values.
+    """
+    station_dict= defaultdict()
+    values = df.values
+    for row in values:
+        stationid = row[0]
+        data= row[1:]
+        station_dict[stationid]=data
+    return station_dict
