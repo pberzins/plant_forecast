@@ -1,3 +1,6 @@
+import psycopg2 as pg2
+import time
+
 file_list= ['clean_2000.csv','clean_2001.csv','clean_2002.csv',
             'clean_2003.csv','clean_2004.csv','clean_2005.csv',
             'clean_2006.csv','clean_2007.csv','clean_2008.csv']
