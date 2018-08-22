@@ -20,9 +20,9 @@ def upload_csv_to_postgres(file_list, name_list, directory_path, db_name, loc='l
     conn = pg2.connect(dbname=db_name, host=loc)
     cur = conn.cursor()
     conn.autocommit=True
-    for name, file in zip(name_list,file_list):
+    for name, fill in zip(name_list,file_list):
         start = time.time()
-        path_to_file= directory_path+file
+        path_to_file= directory_path+fill
 
         make_table_command = f"""CREATE TABLE {name}
                         (index int,
