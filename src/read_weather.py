@@ -36,7 +36,7 @@ def read_metadata_txt(path):
 def make_clean_csv(panda_df, dest_path_name):
     """Takes in a pandas df, a dest_path, and a name for file
     """
-    panda_df.to_csv(dest_path_name, sep=',')
+    panda_df.to_csv(dest_path_name)
     return True
 
 def station_id_lookup(df):
