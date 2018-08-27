@@ -1,3 +1,12 @@
+import numpy as np
+import pandas as pd
+import gdal
+import calendar
+import os
+import numpy.ma as ma
+import time
+import datetime
+
 def cast_array_to_csv(timestamp_array, ndvi_array, product, tile):
     """INPUT:
     Timestamp is a 2d array,
@@ -46,7 +55,7 @@ def pixel2coord(x, y):
 
     return lat, long
 
-def try_again(path):
+def modis_powerhouse(path):
     """Takes in a path to a folder where there are two folders:
         1.) ndvi_tiff
         2.) quality_tiff
@@ -59,8 +68,9 @@ def try_again(path):
     ndvi_file_set=  set(list(f for f in os.listdir(ndvi_folder_path) if f.endswith('.' + 'tif')))
     quality_file_set= set(list(f for f in os.listdir(quality_folder_path) if f.endswith('.' + 'tif')))
 
-    latitude, longitude = make_coordinate_array()
+    #latitude, longitude = make_coordinate_array()
     maybe = sorted(ndvi_file_set&quality_file_set)
+    array_list = []
     for f in maybe:
         start= time.time()
         product= f[:7]
@@ -88,13 +98,18 @@ def try_again(path):
 
         date = np.full(data.shape, date_time)
 
-        tile_matrix = np.matrix([date[0][0], -104.9256192, 34.9986319, av])
-        #matrix_list.append(tile_matrix)
+        tile_array = np.array([date[0][0], av])
+        array_list.append(tile_array)
         print(f'Compiled Matrix for {date_time} in {time.time()-start} seconds')
         #return matrix_list
         #yield(tile_matrix)
-        return tile_matrix
 
+
+    df = pd.DataFrame(np.array(np.array(array_list)), columns=['measurement_date','ndvi'])
+    df = df.set_index('measurement_date')
+    df.index = pd.to_datetime(df.index)
+
+    return df
 
 
 def matrix_compiler(folder_path):
@@ -161,4 +176,83 @@ def cast_csv_to_postgres(path_to_file, db_name, table_name, loc='localhost'):
     #print(f'Uploaded MODIS Data: {f to SQL in about {run_time} seconds')
     conn.close()
     return None
-            
+
+def get_weather_from_sql(start_date=2012, end_date=2013,meta_data=None, state='NM'):
+    """Takes in a database, and gets something out of it
+    """
+    one_state=meta_data[meta_data['state']==state]
+    clause = tuple(one_state['station_id'].values)
+
+    conn= pg2.connect(dbname='weather', host='localhost')
+    cur = conn.cursor()
+
+    date_list= list(range(start_date,end_date))
+    empty_list = []
+    for year in date_list:
+        start= time.time()
+        print(f'Getting weather data from year: {year}')
+        table_name = 'w_'+str(year)[-2:]
+        cur.execute(f'SELECT * from {table_name};')
+
+
+        data = cur.fetchall()
+        #wdf= pd.DataFrame(data, columns=['index','station_id','measurement_date','measurement_type', 'measurement_flag'])
+        #wdf = wdf.set_index('measurement_date')
+        #wdf.drop(columns=['index'], inplace=True)
+        empty_list.append(np.array(data))
+        end= time.time()-start
+        print(f'Weather for year {year} collectd in {end} seconds')
+    conn.close()
+    return np.concatenate(np.array(empty_list))
+
+def prepare_weather_data_for_merge(df):
+    wdf= pd.DataFrame(df, columns=['index','station_id','measurement_date','measurement_type', 'measurement_flag'])
+    wdf = wdf.set_index('measurement_date')
+    wdf.drop(columns=['index'], inplace=True)
+    wdf.index = pd.to_datetime(wdf.index)
+    wdf['measurement_flag']=wdf['measurement_flag'].astype(float)
+    return wdf
+
+def get_average_per_state(meta_data,weather_data, state):
+    """Takes in the meta_data_df, and weather_data, and a state,
+        returns averages per state on a julian day basis
+    """
+    one_state=meta_data[meta_data['state']==state]
+
+    state_set = set(one_state['station_id'])
+    weather_set=set(weather_data['station_id'])
+    intersection_list = list(weather_set& state_set)
+    print(f'There are {len(intersection_list)} stations in the state of {state}')
+    all_stations_in_state= weather_data[weather_data['station_id'].isin(intersection_list)]
+
+
+    pivoted = pd.pivot_table(all_stations_in_state,index=['station_id','measurement_date'], columns='measurement_type', values='measurement_flag')
+    grouped_by_day= pivoted.groupby('measurement_date').mean()
+
+    #return get_julian_day_column(grouped_by_day)
+    return grouped_by_day
+
+def time_delta_merge(ndvi_df, weather_df):
+    """Takes in two data frames,
+    ndvi_df columns: "measurement_date|ndvi"
+    weather_df columns: "meaurment_date|PRCP|SNOW|SNWD|TMAX|TMIN"
+
+    """
+    satellite_data = ndvi_df.index.values
+    ndvi_weather_aggregate_list =[]
+    for e in satellite_data[1:]:
+        ndvi_value_for_date= ndvi_df[ndvi_df.index==e]['ndvi'].values
+
+        rng = pd.date_range(end=e, periods=16, freq='D')
+        subset = weather_df[weather_df.index.isin(rng)]
+        #print(weather_df[weather_df.index==e])
+        mean= subset.mean().values
+        #return mean
+        datum = np.array([e,mean[0],mean[1],mean[2],mean[3],mean[4],ndvi_value_for_date[0]])
+        ndvi_weather_aggregate_list.append(datum)
+
+    data= np.array(ndvi_weather_aggregate_list)[:,1:]
+    indi= np.array(ndvi_weather_aggregate_list)[:,0]
+
+    df = pd.DataFrame(data=data, index=indi,columns=['PRCP','SNOW','SNOWD','TMAX','TMIN','NDVI'])
+    return df
