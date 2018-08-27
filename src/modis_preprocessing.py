@@ -6,6 +6,7 @@ import os
 import numpy.ma as ma
 import time
 import datetime
+import psycopg2 as pg2
 
 def cast_array_to_csv(timestamp_array, ndvi_array, product, tile):
     """INPUT:
@@ -163,8 +164,6 @@ def cast_csv_to_postgres(path_to_file, db_name, table_name, loc='localhost'):
                                 tile_id text,
                                 ndvi integer[][]);"""
 
-
-
     upload_data_command= f"""COPY {table_name}
                                 FROM '{path_to_file}'
                                 csv header;"""
@@ -177,7 +176,7 @@ def cast_csv_to_postgres(path_to_file, db_name, table_name, loc='localhost'):
     conn.close()
     return None
 
-def get_weather_from_sql(start_date=2012, end_date=2013,meta_data=None, state='NM'):
+def get_weather_from_sql(start_date=2013, end_date=2014,meta_data=None, state='NM'):
     """Takes in a database, and gets something out of it
     """
     one_state=meta_data[meta_data['state']==state]
@@ -255,4 +254,11 @@ def time_delta_merge(ndvi_df, weather_df):
     indi= np.array(ndvi_weather_aggregate_list)[:,0]
 
     df = pd.DataFrame(data=data, index=indi,columns=['PRCP','SNOW','SNOWD','TMAX','TMIN','NDVI'])
+    return df
+
+def get_julian_day_column(df):
+    """Takes in a data frame,
+    adds a julian day column
+    """
+    df['julian']= df['measurement_date'].to_julian_date()
     return df
