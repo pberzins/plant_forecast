@@ -42,3 +42,19 @@ def upload_csv_to_postgres(file_list, name_list, directory_path, db_name, loc='l
         print(f'Uploaded Weather Data from {fill} in about {run_time} seconds')
     conn.close()
     return None
+
+def make_indi():
+    conn = pg2.connect(dbname='weather', host='localhost')
+    cur = conn.cursor()
+    conn.autocommit=True
+
+    table_list= ['w_04', 'w_05', 'w_06','w_07','w_08','w_09','w_10', 'w_11','w_12','w_13','w_14','w_15','w_16','w_17']
+    for e in table_list:
+        start=time.time()
+        command = f"""CREATE INDEX ON {e}(station_id, measurement_date);
+                    """
+        cur.execute(command)
+
+        print(f'created index on {e} in about: {time.time()-start} seconds! ')
+    conn.close()
+    return None    
