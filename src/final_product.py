@@ -13,7 +13,6 @@ import gdal
 import os
 import numpy.ma as ma
 import calendar
-import calendar
 import time
 
 import src.modis_preprocessing as mpre
