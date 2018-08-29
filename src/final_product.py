@@ -1,21 +1,24 @@
 import pandas as pd
 import numpy as np
+import numpy.ma as ma
 import matplotlib.pyplot as plt
 import csv
-import src.read_weather as rw
+from collections import defaultdict
+
 import psycopg2 as pg2
 import sqlalchemy
+import s3fs
+
 import julian
 import datetime
-import s3fs
-from collections import defaultdict
-import gdal
-import os
-import numpy.ma as ma
 import calendar
 import time
 
+import gdal
+import os
+
 import src.modis_preprocessing as mpre
+import src.read_weather as rw
 
 class PlantForecast():
 
