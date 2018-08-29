@@ -28,13 +28,16 @@ class PlantForecast():
         pf.load_weather()
         pf.merge_modis_weather()
 
-        train_df, test_df = pf. train_test_split_by_year([2015,2016,2017])
+        train_df, test_df = pf.train_test_split_by_year([2015,2016,2017])
+
+        ***-__-__-__-***
+
+        Model what you want to find!
+        ***-__-__-__-***
+
+        Graph Results!
 
         ***
-        Model what you want to find
-        ***
-
-        Graph Results!        
     """
 
     def __init__(self,tiff_files_path='/Users/Berzyy/plant_forecast/data/modis_co/tiff_files/',
@@ -133,10 +136,16 @@ class PlantForecast():
         measurement_date|PRCP|SNOW|SNWD|TMAX|TMIN|NDVI
         """
         df = self.time_delta_merge(self.ndvi,self.weather)
+        df['intercept']=1
         self.combined= self.clean_merged_df(df)
         return self
 
     def train_test_split_by_year(self,test_year=[2017]):
+        """INPUT:
+        test_year= list of years held out of fitting of model
+        OUTPUT:
+        Training DataFrame and Testing DataFrame
+        """
         test_df=self.combined[self.combined.index.year.isin(test_year)]
         train_df=self.combined[~self.combined.index.year.isin(test_year)]
         self.test = test_df
