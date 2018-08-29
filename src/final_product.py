@@ -21,6 +21,21 @@ import src.modis_preprocessing as mpre
 import src.read_weather as rw
 
 class PlantForecast():
+    """ EXAMPLE:
+        pf = PlantForecast()
+        pf.load_metadata()
+        pf.load_ndvi()
+        pf.load_weather()
+        pf.merge_modis_weather()
+
+        train_df, test_df = pf. train_test_split_by_year([2015,2016,2017])
+
+        ***
+        Model what you want to find
+        ***
+
+        Graph Results!        
+    """
 
     def __init__(self,tiff_files_path='/Users/Berzyy/plant_forecast/data/modis_co/tiff_files/',
                 meta_data_path='data/weather/meta_data/ghcnd-stations.txt',
@@ -193,7 +208,6 @@ class PlantForecast():
         ndvi_file_set=  set(list(f for f in os.listdir(ndvi_folder_path) if f.endswith('.' + 'tif')))
         quality_file_set= set(list(f for f in os.listdir(quality_folder_path) if f.endswith('.' + 'tif')))
 
-        #latitude, longitude = make_coordinate_array()
         cross_checked = sorted(ndvi_file_set&quality_file_set)
         array_list = []
         for f in cross_checked:
@@ -217,7 +231,7 @@ class PlantForecast():
             quality= None
 
             data=self.quality_screen(q_arr, n_arr)
-            #return data
+
             av=data[data!=-3000].mean()
             date_time=self.JulianDate_to_MMDDYYY(int(year),int(julian_day))
 
@@ -226,8 +240,7 @@ class PlantForecast():
             tile_array = np.array([date[0][0], av])
             array_list.append(tile_array)
             print(f'Compiled Matrix for {date_time} in {time.time()-start} seconds')
-            #return matrix_list
-            #yield(tile_matrix)
+
 
 
         df = pd.DataFrame(np.array(np.array(array_list)), columns=['measurement_date','ndvi'])
