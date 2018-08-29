@@ -23,30 +23,53 @@ class PlantForecast():
                 meta_data_path='data/weather/meta_data/ghcnd-stations.txt',
                 db_name='weather',
                 host='localhost'):
+                """INPUTS:
+                tiff_files_path: Path to where you have two folders of tiff files:
+                    -One folder should be called "NDVI", and the other "Quality"
+                meta_data_path: Path to where ghcnd-stations.txt is downloaded
+                db_name= The name of the PostGRESQL database
+                host= Who is hosting the server
+                """
         self.tiff_path= tiff_files_path
         self.meta_data_path= meta_data_path
         self.db_name = db_name
         self.host = host
+
     def load_metadata(self):
-        """loads meta_data from 'ghcnd-stations.txt'
-            Will be useful for geo location
+        """Loads the ghcnd-stations.txt into a Pandas DataFrame.
+        OUTPUT:
+        A Pandas Data frame with columns:
+        station_id|latitude|longitude|elevation|state
+        Returns self
         """
         self.meta_data = self.read_metadata_txt(self.meta_data_path)
         return self
 
     def load_ndvi(self):
-        """Loads NDVI from folder which has NDVI tiffs, and quality tiffs
+        """INPUT: self
+            OUTPUT:
+            A Pandas DataFrame with columns:
+            Date| NDVI
         """
         self.ndvi= self.modis_powerhouse(self.tiff_path)
         return self
 
     def load_weather(self, preloaded=False, preloaded_path='/Users/Berzyy/plant_forecast/data/weather/2000_2017_nm.csv'):
-        if preloaded == True:
+        """INPUTS:
+            preloaded: True or False, if there is a preloaded CSV
+            preloaded_path: Path to CSV with columns:
+            measurement_date|PRCP|SNOW|SNWD|TMAX|TMIN
+            If both are none, it will pull from PostGreSQL
+            OUTPUT:
+            A Pandas Data Frame named self.weather
+        """
+        if preloaded == True and preloaded_path!= None:
             df= pd.read_csv(preloaded_path)
             df = df.set_index('measurement_date')
             df.index = pd.to_datetime(df.index)
             self.weather= df
             return self
+
         else:
             conn = pg2.connect(dbname=self.db_name, host=self.host)
             cur = conn.cursor()
@@ -87,7 +110,10 @@ class PlantForecast():
             return self
 
     def merge_modis_weather(self):
-
+        """OUTPUT:
+        Merges NDVI data and WeatherData into Pandas Dataframe with columns:
+        measurement_date|PRCP|SNOW|SNWD|TMAX|TMIN|NDVI
+        """
         self.combined = self.time_delta_merge(self.ndvi,self.weather)
         return self
 
@@ -95,7 +121,8 @@ class PlantForecast():
         """Takes in two data frames,
         ndvi_df columns: "measurement_date|ndvi"
         weather_df columns: "meaurment_date|PRCP|SNOW|SNWD|TMAX|TMIN"
-
+        Averages all weather from the past 16 days for every date that there is
+        a satellite image, including that day.
         """
         satellite_data = ndvi_df.index.values
         ndvi_weather_aggregate_list =[]
@@ -117,6 +144,11 @@ class PlantForecast():
         return df
 
     def pivot_weather_data_frame(self,df):
+        """INPUTS: Self, df
+        OUTPUTS:
+        A Pandas DataFrame with columns:
+        PRCP|SNOW|SNWD|TMAX|TMIN with values in corresponding "measurment_flag" as floats
+        """
         pivoted = pd.pivot_table(df,index=['station_id','measurement_date'], columns='measurement_type', values='measurement_flag')
         grouped_by_day= pivoted.groupby('measurement_date').mean()
 
@@ -124,6 +156,12 @@ class PlantForecast():
         return grouped_by_day
 
     def prepare_weather_data_for_merge(self,df):
+        """INPUTS:
+        Self, and a DataFrame, an SQL QUERY
+        OUTPUTS:
+        A Data frame with index of 'measurement_date',
+
+        """
         wdf= pd.DataFrame(df, columns=['index','station_id','measurement_date','measurement_type', 'measurement_flag'])
         wdf = wdf.set_index('measurement_date')
         wdf.drop(columns=['index'], inplace=True)
@@ -145,9 +183,9 @@ class PlantForecast():
         quality_file_set= set(list(f for f in os.listdir(quality_folder_path) if f.endswith('.' + 'tif')))
 
         #latitude, longitude = make_coordinate_array()
-        maybe = sorted(ndvi_file_set&quality_file_set)
+        cross_checked = sorted(ndvi_file_set&quality_file_set)
         array_list = []
-        for f in maybe:
+        for f in cross_checked:
             start= time.time()
             product= f[:7]
             year= f[9:13]
@@ -191,11 +229,18 @@ class PlantForecast():
         """INPUTS
             quality= 2D array
             ndvi = 2d array
+        OUTPUTS:
+            A matrix with all quality flags != 1 set to -3000 (no_fill value)
         """
         ndvi[quality!=0]= -3000
         return ndvi
 
     def JulianDate_to_MMDDYYY(self,y,jd):
+        """INPUTS:
+        Takes in a year and Julian Date of year
+        OUTPUS:
+        Returns a date time object
+        """
         month = 1
         day = 0
         while jd - calendar.monthrange(y,month)[1] > 0 and month <= 12:
@@ -204,7 +249,9 @@ class PlantForecast():
         return datetime.date(y, month, jd)
 
     def read_metadata_txt(self,path):
-        """Takes in the path to the metadata
+        """INPUTS:
+        path to the metadata
+        OUTPUTS:
         Returns Data frame with:
         STATION ID, LATITUDE, LONGITUDE, ELEVATION
         """
