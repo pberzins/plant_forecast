@@ -33,10 +33,10 @@ class PlantForecast():
                 db_name= The name of the PostGRESQL database
                 host= Who is hosting the server
                 """
-        self.tiff_path= tiff_files_path
-        self.meta_data_path= meta_data_path
-        self.db_name = db_name
-        self.host = host
+                self.tiff_path= tiff_files_path
+                self.meta_data_path= meta_data_path
+                self.db_name = db_name
+                self.host = host
 
     def load_metadata(self):
         """Loads the ghcnd-stations.txt into a Pandas DataFrame.
@@ -117,8 +117,16 @@ class PlantForecast():
         Merges NDVI data and WeatherData into Pandas Dataframe with columns:
         measurement_date|PRCP|SNOW|SNWD|TMAX|TMIN|NDVI
         """
-        self.combined = self.time_delta_merge(self.ndvi,self.weather)
+        df = self.time_delta_merge(self.ndvi,self.weather)
+        self.combined= self.clean_merged_df(df)
         return self
+
+    def train_test_split_by_year(self,test_year=[2017]):
+        test_df=self.combined[self.combined.index.year.isin(test_year)]
+        train_df=self.combined[~self.combined.index.year.isin(test_year)]
+        self.test = test_df
+        self.train= train_df
+        return train_df, test_df
 
     def time_delta_merge(self,ndvi_df, weather_df):
         """Takes in two data frames,
@@ -264,4 +272,10 @@ class PlantForecast():
                                na_values=[-999.9],  # Missing elevation is noted as -999.9
                                header=None,
                                names=['station_id', 'latitude', 'longitude', 'elevation', 'state'])
+        return df
+    def clean_merged_df(self, df):
+        """Takes in a data frame
+        Cleans it up by dropping all NaN's
+        """
+        df.dropna(inplace=True)
         return df
