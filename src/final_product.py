@@ -63,7 +63,14 @@ class PlantForecast():
         station_id|latitude|longitude|elevation|state
         Returns self
         """
-        self.meta_data = self.read_metadata_txt(self.meta_data_path)
+        df = pd.read_csv(self.meta_data_path,
+                               sep='\s+',
+                               usecols=[0, 1, 2, 3, 4],  
+                               na_values=[-999.9],  # Missing elevation is noted as -999.9
+                               header=None,
+                               names=['station_id', 'latitude', 'longitude', 'elevation', 'state'])
+        self.meta_data = df
+
         return self
 
     def load_ndvi(self):
