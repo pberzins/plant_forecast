@@ -169,6 +169,7 @@ class PlantForecast():
         self.train= train_df
         return train_df, test_df
 
+
     def time_delta_merge(self,ndvi_df, weather_df,longterm=100):
         """Takes in two data frames,
         ndvi_df columns: "measurement_date|ndvi"
