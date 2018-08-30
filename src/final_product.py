@@ -65,7 +65,7 @@ class PlantForecast():
         """
         df = pd.read_csv(self.meta_data_path,
                                sep='\s+',
-                               usecols=[0, 1, 2, 3, 4],  
+                               usecols=[0, 1, 2, 3, 4],
                                na_values=[-999.9],  # Missing elevation is noted as -999.9
                                header=None,
                                names=['station_id', 'latitude', 'longitude', 'elevation', 'state'])
@@ -73,14 +73,22 @@ class PlantForecast():
 
         return self
 
-    def load_ndvi(self):
+    def load_ndvi(self,preloaded=False, preloaded_path='/Users/Berzyy/plant_forecast/data/weather/2000_2017_ndvi.csv'):
         """INPUT: self
             OUTPUT:
             A Pandas DataFrame with columns:
             Date| NDVI
         """
-        self.ndvi= self.modis_powerhouse(self.tiff_path)
-        return self
+        if preloaded == True and preloaded_path!= None:
+            df= pd.read_csv(preloaded_path)
+            df = df.set_index('measurement_date')
+            df.index = pd.to_datetime(df.index)
+            self.ndvi = df
+            return self
+
+        else:
+            self.ndvi= self.modis_powerhouse(self.tiff_path)
+            return self
 
     def load_weather(self, preloaded=False, preloaded_path='/Users/Berzyy/plant_forecast/data/weather/2000_2017_nm.csv'):
         """INPUTS:
@@ -137,29 +145,31 @@ class PlantForecast():
             self.weather=df
             return self
 
-    def merge_modis_weather(self):
+    def merge_modis_weather(self, longterm=100):
         """OUTPUT:
         Merges NDVI data and WeatherData into Pandas Dataframe with columns:
         measurement_date|PRCP|SNOW|SNWD|TMAX|TMIN|NDVI
         """
-        df = self.time_delta_merge(self.ndvi,self.weather)
+        df = self.time_delta_merge(self.ndvi,self.weather, longterm)
+        print(df.columns)
         df['intercept']=1
-        self.combined= self.clean_merged_df(df)
+        df.dropna(inplace=True)
+        self.combined= df
         return self
 
-    def train_test_split_by_year(self,test_year=[2017]):
+    def train_test_split_by_year(self,test_years=[2017],train_years=list(range(2000,2010))):
         """INPUT:
         test_year= list of years held out of fitting of model
         OUTPUT:
         Training DataFrame and Testing DataFrame
         """
-        test_df=self.combined[self.combined.index.year.isin(test_year)]
-        train_df=self.combined[~self.combined.index.year.isin(test_year)]
+        test_df=self.combined[self.combined.index.year.isin(test_years)]
+        train_df=self.combined[self.combined.index.year.isin(train_years)]
         self.test = test_df
         self.train= train_df
         return train_df, test_df
 
-    def time_delta_merge(self,ndvi_df, weather_df):
+    def time_delta_merge(self,ndvi_df, weather_df,longterm=100):
         """Takes in two data frames,
         ndvi_df columns: "measurement_date|ndvi"
         weather_df columns: "meaurment_date|PRCP|SNOW|SNWD|TMAX|TMIN"
@@ -168,6 +178,7 @@ class PlantForecast():
         """
         satellite_data = ndvi_df.index.values
         ndvi_weather_aggregate_list =[]
+        print(longterm)
         for e in satellite_data[1:]:
             ndvi_value_for_date= ndvi_df[ndvi_df.index==e]['ndvi'].values
 
@@ -176,13 +187,28 @@ class PlantForecast():
             #print(weather_df[weather_df.index==e])
             mean= subset.mean().values
             #return mean
-            datum = np.array([e,mean[0],mean[1],mean[2],mean[3],mean[4],ndvi_value_for_date[0]])
+
+            precip_range= pd.date_range(end=e, periods=longterm, freq='D')
+            precip_subset= weather_df[weather_df.index.isin(precip_range)]
+
+            long_mean=precip_subset.mean().values
+            long_sum=precip_subset.sum().values
+
+            datum = np.array([e,mean[0],mean[1],mean[2],mean[3],mean[4],
+                                long_mean[0],long_mean[1],long_mean[2],
+                                long_mean[3],long_mean[4],long_sum[0],long_sum[1],
+                                long_sum[2],ndvi_value_for_date[0]])
+
             ndvi_weather_aggregate_list.append(datum)
 
         data= np.array(ndvi_weather_aggregate_list)[:,1:]
         indi= np.array(ndvi_weather_aggregate_list)[:,0]
 
-        df = pd.DataFrame(data=data, index=indi,columns=['PRCP','SNOW','SNOWD','TMAX','TMIN','NDVI'])
+        df = pd.DataFrame(data=data, index=indi,
+                            columns=['PRCP','SNOW','SNOWD','TMAX','TMIN',
+                                    'LT_precip','LT_snow','LT_snowd', 'LT_tmax',
+                                    'LT_tmin','s_precip','s_snow','s_snowd','NDVI'])
+
         return df
 
     def pivot_weather_data_frame(self,df):
@@ -287,24 +313,3 @@ class PlantForecast():
             jd = jd - calendar.monthrange(y,month)[1]
             month = month + 1
         return datetime.date(y, month, jd)
-
-    def read_metadata_txt(self,path):
-        """INPUTS:
-        path to the metadata
-        OUTPUTS:
-        Returns Data frame with:
-        STATION ID, LATITUDE, LONGITUDE, ELEVATION
-        """
-        df = pd.read_csv(path,
-                               sep='\s+',  # Fields are separated by one or more spaces
-                               usecols=[0, 1, 2, 3, 4],  # Grab only the first 4 columns
-                               na_values=[-999.9],  # Missing elevation is noted as -999.9
-                               header=None,
-                               names=['station_id', 'latitude', 'longitude', 'elevation', 'state'])
-        return df
-    def clean_merged_df(self, df):
-        """Takes in a data frame
-        Cleans it up by dropping all NaN's
-        """
-        df.dropna(inplace=True)
-        return df
