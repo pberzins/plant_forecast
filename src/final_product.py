@@ -151,7 +151,7 @@ class PlantForecast():
         measurement_date|PRCP|SNOW|SNWD|TMAX|TMIN|NDVI
         """
         df = self.time_delta_merge(self.ndvi,self.weather, longterm)
-        print(df.columns)
+        #print(df.columns)
         df['intercept']=1
         df.dropna(inplace=True)
         self.combined= df
@@ -178,7 +178,7 @@ class PlantForecast():
         """
         satellite_data = ndvi_df.index.values
         ndvi_weather_aggregate_list =[]
-        print(longterm)
+        #print(longterm)
         for e in satellite_data[1:]:
             ndvi_value_for_date= ndvi_df[ndvi_df.index==e]['ndvi'].values
 
@@ -196,8 +196,9 @@ class PlantForecast():
 
             datum = np.array([e,mean[0],mean[1],mean[2],mean[3],mean[4],
                                 long_mean[0],long_mean[1],long_mean[2],
-                                long_mean[3],long_mean[4],long_sum[0],long_sum[1],
-                                long_sum[2],ndvi_value_for_date[0]])
+                                long_mean[3],long_mean[4],ndvi_value_for_date[0]])
+
+                                #,long_sum[0],long_sum[1],long_sum[2],ndvi_value_for_date[0]])
 
             ndvi_weather_aggregate_list.append(datum)
 
@@ -207,7 +208,8 @@ class PlantForecast():
         df = pd.DataFrame(data=data, index=indi,
                             columns=['PRCP','SNOW','SNOWD','TMAX','TMIN',
                                     'LT_precip','LT_snow','LT_snowd', 'LT_tmax',
-                                    'LT_tmin','s_precip','s_snow','s_snowd','NDVI'])
+                                    'LT_tmin','NDVI'])
+                                    #'s_precip','s_snow','s_snowd','NDVI'])
 
         return df
 
