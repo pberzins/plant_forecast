@@ -78,6 +78,8 @@ Modeling was done using SciKit Learn to build a variety of models in order to co
 
 **QGIS:** Follow the directions for download to the **T**, if you have conda python but not python.org python, it will mess up and you will not be able to get it to work. [QGIS](https://qgis.org/en/site/)
 
+**HEG:** You will need to use HEG to warp the Sinusodial projection of the HDF files into Geographic Projection (Latitutude, Longitude) it can be downloaded here: [HEG](https://newsroom.gsfc.nasa.gov/sdptoolkit/HEG/HEGHome.html)
+
 ## Evaluation 
 
 
