@@ -41,7 +41,7 @@ class PlantForecast():
     """
 
     def __init__(self,tiff_files_path='/Users/Berzyy/plant_forecast/data/modis_co/tiff_files/',
-                meta_data_path='data/weather/meta_data/ghcnd-stations.txt',
+                meta_data_path='/Users/Berzyy/plant_forecast/preloaded_data/ghcnd-stations.txt',
                 db_name='weather',
                 host='localhost'):
                 """INPUTS:
@@ -73,13 +73,14 @@ class PlantForecast():
 
         return self
 
-    def load_ndvi(self,preloaded=False, preloaded_path='/Users/Berzyy/plant_forecast/data/weather/2000_2017_ndvi.csv'):
+    def load_ndvi(self,preloaded=False, preloaded_path='/Users/Berzyy/plant_forecast/preloaded_data/2000_2017_ndvi.csv'):
         """INPUT: self
             OUTPUT:
             A Pandas DataFrame with columns:
             Date| NDVI
         """
-        if preloaded == True and preloaded_path!= None:
+        if preloaded == True:
+            print('preloading')
             df= pd.read_csv(preloaded_path)
             df = df.set_index('measurement_date')
             df.index = pd.to_datetime(df.index)
@@ -90,7 +91,7 @@ class PlantForecast():
             self.ndvi= self.modis_powerhouse(self.tiff_path)
             return self
 
-    def load_weather(self, preloaded=False, preloaded_path='/Users/Berzyy/plant_forecast/data/weather/2000_2017_nm.csv'):
+    def load_weather(self, preloaded=False, preloaded_path='/Users/Berzyy/plant_forecast/preloaded_data/2000_2017_weather.csv'):
         """INPUTS:
             preloaded: True or False, if there is a preloaded CSV
             preloaded_path: Path to CSV with columns:
@@ -268,7 +269,10 @@ class PlantForecast():
             ndvi = gdal.Open(ndvi_file)
             n_band = ndvi.GetRasterBand(1)
             n_arr = n_band.ReadAsArray()
+            geotransform = ndvi.GetGeoTransform()
             ndvi= None
+
+            return geotransform
 
             quality = gdal.Open(quality_file)
             q_band = quality.GetRasterBand(1)
