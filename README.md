@@ -6,17 +6,17 @@ This project attempts to use remote sensing techniques to predict the future veg
 ## Data Understanding 
 How does one measure Vegetative Health?:
 
-**NDVI:** NDVI which stands for Normalized Differenced Vegetation Index is a measure of the amount of "green" in a substance using infrared wavelengths. More information can be found here: https://en.wikipedia.org/wiki/Normalized_difference_vegetation_index
+**NDVI:** NDVI which stands for Normalized Differenced Vegetation Index is a measure of the amount of "green" in a substance using infrared wavelengths. More information can be found here: [NDVI Wiki](https://en.wikipedia.org/wiki/Normalized_difference_vegetation_index)
 
-**Photosynthesis:** Photosynthesis is the production of glucose (sugar) and water from Carbon Dioxide and and Water. More information can be found here: https://en.wikipedia.org/wiki/Photosynthesis
+**Photosynthesis:** Photosynthesis is the production of glucose (sugar) and water from Carbon Dioxide and and Water. More information can be found here: [Photosynthesis Wiki](https://en.wikipedia.org/wiki/Photosynthesis)
 
 
 ## Data Preparation
 __This project requires GDAL!__
-GDAL can be very difficult to install if python packages are not organized in a particular way. In the case of this project, I had to uninstall and reinstall my Anaconda Environment to get it to work. This is no small task, good luck! 
+GDAL can be very difficult to install if python packages are not organized in a particular way. In the case of this project, I had to uninstall and reinstall my Anaconda Environment to get it to work. This is no small task, good luck! [GDAL](https://www.gdal.org/)
 
 ## Satellite Data:
-Satellite Data is obtained with the PyModis Module which allows you to bulk download MODIS tiles and products available from NASA. For download and documentation of PyModis: http://www.pymodis.org/
+Satellite Data is obtained with the PyModis Module which allows you to bulk download MODIS tiles and products available from NASA. For download and documentation of PyModis: [PyModis](http://www.pymodis.org/)
 
 The Naming System of MODIS Products will be described below: 
 
@@ -36,17 +36,47 @@ The Naming System of MODIS Products will be described below:
 
 **hdf** : Data Format 
 
-more information on this specific product can be found here: https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a2_v006
+more information on this specific product can be found here: [MOD13A2 Product Information](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a2_v006)
 
 ### Converting .hdf files into .tiff files 
-hdf files are very cumbersome to work with, especially since their projection is Sinusudial. Many people are more accustomed to thinking in terms of latitude and longitude (Geographical). For this project I used a an application called: HDF-EOS To GeoTIFF Conversion Tool (HEG). HEG is very useful for converting HDF's to Geographic projections. Can be downloaded here: https://newsroom.gsfc.nasa.gov/sdptoolkit/HEG/HEGHome.html
+hdf files are very cumbersome to work with, especially since their projection is Sinusudial. Many people are more accustomed to thinking in terms of latitude and longitude (Geographical). For this project I used a an application called: HDF-EOS To GeoTIFF Conversion Tool (HEG). HEG is very useful for converting HDF's to Geographic projections. Can be downloaded here: [HEG Download](https://newsroom.gsfc.nasa.gov/sdptoolkit/HEG/HEGHome.html)
 
 ## Weather Data:
 
+Historical Weather data is very easy to download and manipulate! Weather was downloaed from Global Historical Climate Network Daily (GHCND), which can be downloaded either directly from the FTP server or it can be downloaded using one of the provided data tools. I recommend getting started with their tool if you are not sure exactly what information you are looking for. 
 
+More information can be found here: [GHCND Info](https://www.ncdc.noaa.gov/ghcn-daily-description)
 
+__Meta Data:__
+The meta data for each station is very important because it gives the Latitude, Longitude, and Elevation. This Meta Data is uploaded to the FTP server and can be found here: [meta_data](ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt)
+
+## Using PostGIS and PostGRESQL:
+PostGIS is an extension of PostGRESQL which allows the ability for the user to do spatial queries on Tables in SQL. Since the Meta Data provides LAT, LONG parameters, it is very easy to turn those points of information into geometry points in PostGIS:
+Documentation can be found here: [PostGIS](https://postgis.net/)
+
+## QGIS to Visualize Results:
+QGIS is its own beast, if you have ever used ARCGis and been frustrated how clunky it is, QGIS is the tool for you! QGIS allows you connect directly to a PostGIS database and visualize results. This project does not teach you much about QGIS but it is important to know that it exists, and you will not regret knowing your way around this application. 
+More information can be found here: [QGIS](https://qgis.org/en/site/)
 
 ## Modeling
+Modeling was done using SciKit Learn to build a variety of models in order to compare when and where specific models are appropriate measures. 
+
+### Data for Modeling looks like something like this: 
+
+| Date        | TMAX         | TMIN         | SNOW | SNOWD | PRECIP | NDVI     |
+|-------------|--------------|--------------|------|-------|--------|----------|
+| date_object | 0.1 Degree C | 0.1 Degree C | mm   | mm    | mm     | unitless |
+
+# IN PROGRESS #
+
+## TLDR; What you need to succeed: 
+**Python:** from Anaconda AND Python.org (very important for QGIS) [Conda](https://anaconda.org/anaconda/python), [Python.org](https://www.python.org/downloads/release/python-366/)
+
+**GDAL:** I will say this again, do not underestimate how hard this can be to download. [GDAL](https://www.gdal.org/)
+
+**PostGRESQL and PostGIS:** [SQL](https://www.postgresql.org/) and [PostGIS](https://postgis.net/)  
+
+**QGIS:** Follow the directions for download to the **T**, if you have conda python but not python.org python, it will mess up and you will not be able to get it to work. [QGIS](https://qgis.org/en/site/)
 
 ## Evaluation 
 
