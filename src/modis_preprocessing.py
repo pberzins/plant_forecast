@@ -42,19 +42,37 @@ def quality_screen(quality, ndvi):
     return ndvi
 
 
-def pixel2coord(x, y):
+def make_coordinate_array(tile_name='h09v05'):
+    """Takes in a tile name, and returns the lat long
+    for every index in numpy array
+    """
+
+    rows= 2830
+    columns= 1127
+    lat_long=np.zeros(shape=(rows,columns))
+    lat_long_list=[]
+    for row in  range(0,rows):
+        for col in  range(0,columns):
+            lat_long_list.append(pixel2coord(col,row))
+    return np.array(lat_long_list)
+
+
+def pixel2coord(x, y,tile_name='h09v05'):
     """Returns global coordinates from pixel x, y coords"""
-    xoff= -117.4740487
-    yoff= 39.9958333
-    a= 0.008868148103055
-    b= 0
-    d= 0
-    e=-0.008868148103054807
+    if tile_name== 'h09v05':
+        xoff= -117.4740487
+        yoff= 39.9958333
+        a= 0.008868148103055
+        b= 0
+        d= 0
+        e=-0.008868148103054807
+    else:
+        raise ValueError('No information for that tile... yet')
 
-    lat = a * x + b * y + xoff
-    long = d * x + e * y + yoff
+    xp = a * x + b * y + xoff
+    yp = d * x + e * y + yoff
+    return(xp, yp)
 
-    return lat, long
 
 def modis_powerhouse(path):
     """Takes in a path to a folder where there are two folders:
