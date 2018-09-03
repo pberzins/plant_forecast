@@ -55,6 +55,8 @@ class PlantForecast():
                 self.meta_data_path= meta_data_path
                 self.db_name = db_name
                 self.host = host
+                return None
+
 
     def load_metadata(self):
         """Loads the ghcnd-stations.txt into a Pandas DataFrame.
@@ -70,17 +72,18 @@ class PlantForecast():
                                header=None,
                                names=['station_id', 'latitude', 'longitude', 'elevation', 'state'])
         self.meta_data = df
+        self.idfinder= self.station_id_lookup(df)
 
         return self
 
-    def load_ndvi(self,preloaded=False, preloaded_path='/Users/Berzyy/plant_forecast/preloaded_data/2000_2017_ndvi.csv'):
+    def load_ndvi(self,preloaded=False, preloaded_path='preloaded_data/2000_2017_ndvi.csv'):
         """INPUT: self
             OUTPUT:
             A Pandas DataFrame with columns:
             Date| NDVI
         """
         if preloaded == True:
-            print('preloading')
+            print(f'Preloading from path: {preloaded_path}')
             df= pd.read_csv(preloaded_path)
             df = df.set_index('measurement_date')
             df.index = pd.to_datetime(df.index)
@@ -91,7 +94,7 @@ class PlantForecast():
             self.ndvi= self.modis_powerhouse(self.tiff_path)
             return self
 
-    def load_weather(self, preloaded=False, preloaded_path='/Users/Berzyy/plant_forecast/preloaded_data/2000_2017_weather.csv'):
+    def load_weather(self, preloaded=False, preloaded_path='preloaded_data/2000_2017_weather.csv'):
         """INPUTS:
             preloaded: True or False, if there is a preloaded CSV
             preloaded_path: Path to CSV with columns:
@@ -101,6 +104,7 @@ class PlantForecast():
             A Pandas Data Frame named self.weather
         """
         if preloaded == True and preloaded_path!= None:
+            print(f'Preloading from path: {preloaded_path}')
             df= pd.read_csv(preloaded_path)
             df = df.set_index('measurement_date')
             df.index = pd.to_datetime(df.index)
@@ -132,7 +136,7 @@ class PlantForecast():
             for e in table_list:
                 start = time.time()
 
-                get_weather_command= f"""SELECT * FROM {e} WHERE station_id in {stations} limit 100;"""
+                get_weather_command= f"""SELECT * FROM {e} WHERE station_id in {stations};"""
                 cur.execute(get_weather_command)
                 weather = cur.fetchall()
 
@@ -318,3 +322,16 @@ class PlantForecast():
             jd = jd - calendar.monthrange(y,month)[1]
             month = month + 1
         return datetime.date(y, month, jd)
+
+    def station_id_lookup(self,df):
+        """Takes in a data frame
+        returns a dictionary with the keys as station_id,
+        lat, long, elevation, and state as values.
+        """
+        station_dict= defaultdict()
+        values = df.values
+        for row in values:
+            stationid = row[0]
+            data= row[1:]
+            station_dict[stationid]=data
+        return station_dict
