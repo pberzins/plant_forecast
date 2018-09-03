@@ -158,7 +158,7 @@ class PlantForecast():
         self.combined= df
         return self
 
-    def train_test_split_by_year(self,test_years=[2017],train_years=list(range(2000,2010))):
+    def train_test_split_by_year(self,test_years=[2017],train_years=list(range(2000,2017))):
         """INPUT:
         test_year= list of years held out of fitting of model
         OUTPUT:
@@ -180,15 +180,13 @@ class PlantForecast():
         """
         satellite_data = ndvi_df.index.values
         ndvi_weather_aggregate_list =[]
-        #print(longterm)
+
         for e in satellite_data[1:]:
             ndvi_value_for_date= ndvi_df[ndvi_df.index==e]['ndvi'].values
 
             rng = pd.date_range(end=e, periods=16, freq='D')
             subset = weather_df[weather_df.index.isin(rng)]
-            #print(weather_df[weather_df.index==e])
             mean= subset.mean().values
-            #return mean
 
             precip_range= pd.date_range(end=e, periods=longterm, freq='D')
             precip_subset= weather_df[weather_df.index.isin(precip_range)]
@@ -272,7 +270,7 @@ class PlantForecast():
             geotransform = ndvi.GetGeoTransform()
             ndvi= None
 
-            return geotransform
+            #return geotransform
 
             quality = gdal.Open(quality_file)
             q_band = quality.GetRasterBand(1)
