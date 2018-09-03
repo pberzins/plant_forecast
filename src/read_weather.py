@@ -51,3 +51,25 @@ def station_id_lookup(df):
         data= row[1:]
         station_dict[stationid]=data
     return station_dict
+
+def make_coordinate_array(tile_name='h09v05'):
+    """Takes in a tile name, and returns the lat long
+    for every index in numpy array
+    """
+    if tile_name== 'h09v05':
+        xoff= -117.4740487
+        y_off= 39.9958333
+        a= 0.008868148103055
+        b= 0
+        d= 0
+        e=-0.008868148103054807
+    else:
+        raise ValueError('No information for that tile... yet')
+    rows= 2830
+    columns= 1127
+    lat_long=np.zeros(shape=(rows,columns))
+    lat_long_list=[]
+    for row in  range(0,rows):
+        for col in  range(0,colms):
+            lat_long_list.append(pixel2coord(col,row))
+    return lat_long_list    
