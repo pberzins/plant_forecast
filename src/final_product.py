@@ -82,6 +82,7 @@ class PlantForecast():
             A Pandas DataFrame with columns:
             Date| NDVI
         """
+        self.geom_query= self.set_geometry()
         if preloaded == True:
             print(f'Preloading from path: {preloaded_path}')
             df= pd.read_csv(preloaded_path)
@@ -93,6 +94,81 @@ class PlantForecast():
         else:
             self.ndvi= self.modis_powerhouse(self.tiff_path)
             return self
+
+    def set_geometry(self):
+        """Takes in self, returns the geometry of the useful pixels, in an SQL
+        Query when looking for weather stations with the tiles useful area. 
+        """
+        quality_path= self.tiff_path + 'quality_tiff/'
+
+        quality_files= (list(f for f in os.listdir(quality_path) if f.endswith('.' + 'tif')))
+        path_to_file= quality_path + quality_files[0]
+
+        quality = gdal.Open(path_to_file)
+        q_band = quality.GetRasterBand(1)
+        q_arr = q_band.ReadAsArray()
+        geo = quality.GetGeoTransform()
+
+        tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo= self.get_bounding_box(q_arr,geo)
+        return self.make_sql_query(tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo)
+
+    def make_sql_query(self, tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo):
+        """ Does some string manipulation to the the the bounding coordinates
+            to fit into an SQL Query, to make a geometry object
+        """
+        tl = ' '.join(map(str, tl_la_lo))
+        tr = ' '.join(map(str, tr_la_lo))
+        br = ' '.join(map(str, br_la_lo))
+        bl = ' '.join(map(str, bl_la_lo))
+        return f'{tl}, {tr}, {br}, {bl}, {tl}'
+
+    def get_bounding_box(self, Q_arr, geo):
+        """Takes in a quality array, and returns the lat long of the:
+        TOP LEFT, TOP RIGHT, BOTTOM RIGHT, BOTTOM LEFT
+        """
+        tl_la_lo = self.pixel2coord(0,0,geo)
+        br_la_lo = self.pixel2coord(Q_arr.shape[1],Q_arr.shape[0], geo)
+
+        top_right=self.get_top_right_corner(Q_arr)
+        tr_la_lo= self.pixel2coord(top_right,0,geo)
+
+        bottom_left = self.get_bottom_left_corner(Q_arr)
+        bl_la_lo= self.pixel2coord(bottom_left, Q_arr.shape[0],geo)
+
+        return tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo
+
+    def pixel2coord(self, x, y,geo):
+        """Returns global coordinates from pixel x, y coords"""
+        xoff= geo[0]
+        yoff= geo[3]
+        a= geo[1]
+        b= geo[2]
+        d= geo[4]
+        e=geo[5]
+
+        xp = a * x + b * y + xoff
+        yp = d * x + e * y + yoff
+        return(xp, yp)
+
+    def get_top_right_corner(self, Q_arr):
+        """Get the index of array in top right corner
+        """
+        counter = 0
+        for flag in Q_arr[0]:
+            if flag != -1:
+                counter+=1
+            if flag == -1:
+                return counter
+
+    def get_bottom_left_corner(self, Q_arr):
+        """Get the index of the bottom left Corner
+        """
+        counter= 0
+        for flag in Q_arr[-1]:
+            if flag == -1:
+                counter+=1
+            if flag != -1:
+                return counter
 
     def load_weather(self, preloaded=False, preloaded_path='preloaded_data/2000_2017_weather.csv'):
         """INPUTS:
@@ -117,18 +193,15 @@ class PlantForecast():
 
             conn.autocommit=True
 
-            get_weather_in_tile_command = """SELECT station_id
+            get_weather_in_tile_command = f"""SELECT station_id
                                             FROM station_metadata
                                             WHERE ST_Contains(ST_GeomFromText('POLYGON(
-                                            (-117.4740487 39.9958333,
-                                            -104.23 39.75,
-                                            -92.3771896 30.0014304,
-                                            -103.7  30.0014304,
-                                            -117.4740487 39.9958333))',4326),geom);"""
+                                            ({self.geom_query}))',4326),geom) limit 1000;"""
 
             cur.execute(get_weather_in_tile_command)
             data = list(cur.fetchall())
             stations = tuple(map(' '.join, data))
+
 
             table_list= ['w_00','w_01','w_02','w_03','w_04', 'w_05', 'w_06','w_07','w_08','w_09','w_10', 'w_11','w_12','w_13','w_14','w_15','w_16','w_17']
 
@@ -162,7 +235,7 @@ class PlantForecast():
         self.combined= df
         return self
 
-    def train_test_split_by_year(self,test_years=[2017],train_years=list(range(2000,2017))):
+    def train_test_split_by_year(self,test_years=[2015,2016,2017],train_years=list(range(2000,2015))):
         """INPUT:
         test_year= list of years held out of fitting of model
         OUTPUT:
@@ -175,15 +248,19 @@ class PlantForecast():
         return train_df, test_df
 
 
-    def time_delta_merge(self,ndvi_df, weather_df,longterm=100):
+    def time_delta_merge(self,ndvi_df, weather_df,longterm=80):
         """Takes in two data frames,
         ndvi_df columns: "measurement_date|ndvi"
         weather_df columns: "meaurment_date|PRCP|SNOW|SNWD|TMAX|TMIN"
         Averages all weather from the past 16 days for every date that there is
         a satellite image, including that day.
+        longterm= is a number of days you would like to add to lag for your model.
+
         """
         satellite_data = ndvi_df.index.values
         ndvi_weather_aggregate_list =[]
+
+        print(f'You are lagging for {longterm} days')
 
         for e in satellite_data[1:]:
             ndvi_value_for_date= ndvi_df[ndvi_df.index==e]['ndvi'].values
@@ -196,7 +273,8 @@ class PlantForecast():
             precip_subset= weather_df[weather_df.index.isin(precip_range)]
 
             long_mean=precip_subset.mean().values
-            long_sum=precip_subset.sum().values
+            #long_sum=precip_subset.sum().values
+
 
             datum = np.array([e,mean[0],mean[1],mean[2],mean[3],mean[4],
                                 long_mean[0],long_mean[1],long_mean[2],
