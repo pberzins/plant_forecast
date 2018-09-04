@@ -29,9 +29,9 @@ def test_for_longterm_mean(high=150):
         X_test = test_df[['PRCP','SNOW','SNOWD','TMAX','TMIN','LT_precip']]
         y_test = test_df[['NDVI']].values
 
-        #model = GradientBoostingRegressor(loss='ls', n_estimators=10000,
-                                  #learning_rate=0.001,max_depth=100,subsample=0.8)
-        model= Ridge()
+        model = GradientBoostingRegressor(loss='ls', n_estimators=10000,
+                                  learning_rate=0.1,max_depth=100,subsample=0.8)
+        #model= Ridge()
         model.fit(X_train,y_train)
         y_pred=model.predict(X_test)
         score = model.score(X_test,y_test)
