@@ -97,7 +97,7 @@ class PlantForecast():
 
     def set_geometry(self):
         """Takes in self, returns the geometry of the useful pixels, in an SQL
-        Query when looking for weather stations with the tiles useful area. 
+        Query when looking for weather stations with the tiles useful area.
         """
         quality_path= self.tiff_path + 'quality_tiff/'
 
@@ -126,13 +126,17 @@ class PlantForecast():
         """Takes in a quality array, and returns the lat long of the:
         TOP LEFT, TOP RIGHT, BOTTOM RIGHT, BOTTOM LEFT
         """
+        #top left lat/long
         tl_la_lo = self.pixel2coord(0,0,geo)
+        #bottom right lat/long
         br_la_lo = self.pixel2coord(Q_arr.shape[1],Q_arr.shape[0], geo)
 
         top_right=self.get_top_right_corner(Q_arr)
+        #top right lat/long
         tr_la_lo= self.pixel2coord(top_right,0,geo)
 
         bottom_left = self.get_bottom_left_corner(Q_arr)
+        #bottom left lat/long
         bl_la_lo= self.pixel2coord(bottom_left, Q_arr.shape[0],geo)
 
         return tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo
