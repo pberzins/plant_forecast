@@ -76,7 +76,7 @@ class PlantForecast():
 
         return self
 
-    def load_ndvi(self,preloaded=False, preloaded_path='preloaded_data/2000_2017_ndvi.csv'):
+    def load_ndvi(self,preloaded=True, preloaded_path='preloaded_data/2000_2017_ndvi.csv'):
         """INPUT: self
             OUTPUT:
             A Pandas DataFrame with columns:
@@ -174,7 +174,7 @@ class PlantForecast():
             if flag != -1:
                 return counter
 
-    def load_weather(self, preloaded=False, preloaded_path='preloaded_data/2000_2017_weather.csv'):
+    def load_weather(self, preloaded=True, preloaded_path='preloaded_data/2000_2017_weather.csv'):
         """INPUTS:
             preloaded: True or False, if there is a preloaded CSV
             preloaded_path: Path to CSV with columns:
