@@ -1,6 +1,6 @@
 # NDVI forecaster from Historical Weather data and MODIS satellite
 
-## Business Understanding
+## Goals of the Project
 This project attempts to use remote sensing techniques to predict the future vegetatative health of an area in respect to changing weather. Farmers, Gardeners, and Fire Management officials would be able to use the local weather forecast and predict how a specified region's vegetation will change.
 
 ## Data Understanding
@@ -67,7 +67,6 @@ Modeling was done using SciKit Learn to build a variety of models in order to co
 |-------------|--------------|--------------|------|-------|--------|----------|
 | date_object | 0.1 Degree C | 0.1 Degree C | mm   | mm    | mm     | unitless |
 
-# IN PROGRESS #
 
 ## TLDR; What you need to succeed:
 **Python:** from Anaconda **AND** Python.org (very important for QGIS) [Conda](https://anaconda.org/anaconda/python), [Python.org](https://www.python.org/downloads/release/python-366/)
@@ -80,8 +79,7 @@ Modeling was done using SciKit Learn to build a variety of models in order to co
 
 **HEG:** You will need to use HEG to warp the sinusoidal projection of the HDF files into Geographic Projection (Latitutude, Longitude) it can be downloaded here: [HEG](https://newsroom.gsfc.nasa.gov/sdptoolkit/HEG/HEGHome.html)
 
-## Evaluation
-
+## More Resources:
 
 Weather Data: https://www.ncdc.noaa.gov/ghcn-daily-description
 
