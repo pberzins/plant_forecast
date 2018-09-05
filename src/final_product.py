@@ -41,7 +41,7 @@ class PlantForecast():
     """
 
     def __init__(self,tiff_files_path='/Users/Berzyy/plant_forecast/data/modis_co/tiff_files/',
-                meta_data_path='/Users/Berzyy/plant_forecast/preloaded_data/ghcnd-stations.txt',
+                meta_data_path='preloaded_data/ghcnd-stations.txt',
                 db_name='weather',
                 host='localhost'):
                 """INPUTS:
@@ -82,7 +82,6 @@ class PlantForecast():
             A Pandas DataFrame with columns:
             Date| NDVI
         """
-        self.geom_query= self.set_geometry()
         if preloaded == True:
             print(f'Preloading from path: {preloaded_path}')
             df= pd.read_csv(preloaded_path)
@@ -92,6 +91,7 @@ class PlantForecast():
             return self
 
         else:
+            self.geom_query= self.set_geometry()
             self.ndvi= self.modis_powerhouse(self.tiff_path)
             return self
 
