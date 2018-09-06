@@ -280,9 +280,9 @@ class PlantForecast():
             #long_sum=precip_subset.sum().values
 
 
-            datum = np.array([e,mean[0],mean[1],mean[2],mean[3],mean[4],
+            datum = np.array([e,mean[0],mean[1],mean[2],mean[3]+2731,mean[4]+2731,
                                 long_mean[0],long_mean[1],long_mean[2],
-                                long_mean[3],long_mean[4],ndvi_value_for_date[0]])
+                                long_mean[3]+2731,long_mean[4]+2731,ndvi_value_for_date[0]])
 
                                 #,long_sum[0],long_sum[1],long_sum[2],ndvi_value_for_date[0]])
 
