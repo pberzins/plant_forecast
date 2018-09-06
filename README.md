@@ -69,6 +69,7 @@ Modeling was done using SciKit Learn to build a variety of models in order to co
 
 
 ## TLDR; What you need to succeed:
+**You should start in the .ipynb file PlantForecast_demo.pynb to get yourself accustomed to the structure of the PlantForecast Class and what it does**
 **Python:** from Anaconda **AND** Python.org (very important for QGIS) [Conda](https://anaconda.org/anaconda/python), [Python.org](https://www.python.org/downloads/release/python-366/)
 
 **GDAL:** I will say this again, do not underestimate how hard this can be to download. [GDAL](https://www.gdal.org/)
