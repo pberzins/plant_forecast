@@ -1,4 +1,4 @@
-# NDVI forecaster of MODIS Satellite from Historical Weather Data:
+# Remote Sensing from MODIS Satellite to Predict Vegetative Health
 
 ## Goals of the Project
 This project attempts to use remote sensing techniques to predict the future vegetatative health of an area in respect to changing weather. Farmers, Gardeners, and Fire Management officials would be able to use the local weather forecast and predict how a specified region's vegetation will change.
