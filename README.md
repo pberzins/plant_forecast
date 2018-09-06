@@ -1,4 +1,4 @@
-# NDVI forecaster from Historical Weather data and MODIS satellite
+# Remote Sensing from MODIS Satellite to Predict Vegetative Health
 
 ## Goals of the Project
 This project attempts to use remote sensing techniques to predict the future vegetatative health of an area in respect to changing weather. Farmers, Gardeners, and Fire Management officials would be able to use the local weather forecast and predict how a specified region's vegetation will change.
@@ -69,7 +69,10 @@ Modeling was done using SciKit Learn to build a variety of models in order to co
 
 
 ## TLDR; What you need to succeed:
-**You should start in the .ipynb file PlantForecast_demo.pynb to get yourself accustomed to the structure of the PlantForecast Class and what it does**
+
+You should start in the .ipynb file **PlantForecast_demo.pynb** to get yourself accustomed to the structure of the **PlantForecast Class** located in **final_product.py** and see and what it does.
+
+
 **Python:** from Anaconda **AND** Python.org (very important for QGIS) [Conda](https://anaconda.org/anaconda/python), [Python.org](https://www.python.org/downloads/release/python-366/)
 
 **GDAL:** I will say this again, do not underestimate how hard this can be to download. [GDAL](https://www.gdal.org/)
