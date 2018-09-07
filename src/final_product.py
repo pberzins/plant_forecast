@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
-import csv
-from collections import defaultdict
 
 import psycopg2 as pg2
 import sqlalchemy
@@ -16,6 +14,7 @@ import time
 
 import gdal
 import os
+import csv
 
 import src.modis_preprocessing as mpre
 import src.read_weather as rw
@@ -417,3 +416,6 @@ class PlantForecast():
             data= row[1:]
             station_dict[stationid]=data
         return station_dict
+
+if __name__ == "__main__":
+    pass
