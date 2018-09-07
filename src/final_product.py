@@ -279,7 +279,7 @@ class PlantForecast():
             long_mean=precip_subset.mean().values
             #long_sum=precip_subset.sum().values
 
-
+#Adding 2731 was done to convert .01 degrees c into degrees K, removed negatives
             datum = np.array([e,mean[0],mean[1],mean[2],mean[3]+2731,mean[4]+2731,
                                 long_mean[0],long_mean[1],long_mean[2],
                                 long_mean[3]+2731,long_mean[4]+2731,ndvi_value_for_date[0]])
