@@ -1,5 +1,7 @@
 # Remote Sensing from MODIS Satellite to Predict Vegetative Health
 
+Here is a link to my Google Slides Presentation: [link](https://docs.google.com/presentation/d/1hh4mL5_KHlkKRD4tlpuhtyhKs_0CP3Mx-1P6-ZX81nA/edit?usp=sharing)
+
 ## Goals of the Project
 This project attempts to use remote sensing techniques to predict the future vegetatative health of an area in respect to changing weather. Farmers, Gardeners, and Fire Management officials would be able to use the local weather forecast and predict how a specified region's vegetation will change.
 
