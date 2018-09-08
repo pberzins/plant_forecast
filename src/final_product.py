@@ -39,6 +39,9 @@ class PlantForecast():
         ***
     """
 
+#numpy.logical_and
+#numpy.logical_and(x1, x2, /, out=None, *, where=True, casting='same_kind', order='K', dtype=None, subok=True[, signature, extobj]) = <ufunc 'logical_and'>¶
+
     def __init__(self,tiff_files_path='/Users/Berzyy/plant_forecast/data/modis_co/tiff_files/',
                 meta_data_path='preloaded_data/ghcnd-stations.txt',
                 db_name='weather',
@@ -107,6 +110,7 @@ class PlantForecast():
         q_band = quality.GetRasterBand(1)
         q_arr = q_band.ReadAsArray()
         geo = quality.GetGeoTransform()
+        self.geo = geo
 
         tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo= self.get_bounding_box(q_arr,geo)
         return self.make_sql_query(tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo)
@@ -363,6 +367,7 @@ class PlantForecast():
             quality= None
 
             data=self.quality_screen(q_arr, n_arr)
+            return data
 
             av=data[data!=-3000].mean()
             date_time=self.JulianDate_to_MMDDYYY(int(year),int(julian_day))
@@ -416,6 +421,7 @@ class PlantForecast():
             data= row[1:]
             station_dict[stationid]=data
         return station_dict
+
 
 if __name__ == "__main__":
     pass
