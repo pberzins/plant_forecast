@@ -108,3 +108,20 @@ def get_average_per_state(meta_data,weather_data, state):
 
     #return get_julian_day_column(grouped_by_day)
     return grouped_by_day
+
+def make_coordinate_array(data,geom):
+    lat_list = []
+    long_list = []
+    counter = 0
+    for row in range(0,len(sample_data)):
+        for column in range(0,len(sample_data[0]))
+        start = time.time()
+        tupel = pf.pixel2coord(row,column,geom)
+        lat_list.append(tupel)
+        print(f'calculated in {time.time()-start} seconds!")
+        counter+=1
+    latitude_array= np,array(lat_list)
+    return latitude_array
+
+if __name__ == "__main__":
+    pass
