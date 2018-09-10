@@ -99,14 +99,13 @@ def get_average_per_state(meta_data,weather_data, state):
     state_set = set(one_state['station_id'])
     weather_set=set(weather_data['station_id'])
     intersection_list = list(weather_set& state_set)
+
     print(f'There are {len(intersection_list)} stations in the state of {state}')
+
     all_stations_in_state= weather_data[weather_data['station_id'].isin(intersection_list)]
-
-
     pivoted = pd.pivot_table(all_stations_in_state,index=['station_id','measurement_date'], columns='measurement_type', values='measurement_flag')
     grouped_by_day= pivoted.groupby('measurement_date').mean()
 
-    #return get_julian_day_column(grouped_by_day)
     return grouped_by_day
 
 def make_coordinate_array(data,geom):
@@ -124,4 +123,3 @@ def make_coordinate_array(data,geom):
     return latitude_array
 
 if __name__ == "__main__":
-    pass
