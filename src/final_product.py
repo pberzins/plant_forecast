@@ -216,7 +216,8 @@ class PlantForecast():
             for e in table_list:
                 start = time.time()
 
-                get_weather_command= f"""SELECT * FROM {e} WHERE station_id in {stations};"""
+                get_weather_command = f"""SELECT * FROM {e}
+                                        WHERE station_id in {stations};"""
                 cur.execute(get_weather_command)
                 weather = cur.fetchall()
 
@@ -308,7 +309,10 @@ class PlantForecast():
         A Pandas DataFrame with columns:
         PRCP|SNOW|SNWD|TMAX|TMIN with values in corresponding "measurment_flag" as floats
         """
-        pivoted = pd.pivot_table(df,index=['station_id','measurement_date'], columns='measurement_type', values='measurement_flag')
+        pivoted = pd.pivot_table(df,index=['station_id','measurement_date'],
+                                columns='measurement_type',
+                                values='measurement_flag')
+
         grouped_by_day = pivoted.groupby('measurement_date').mean()
 
         #return get_julian_day_column(grouped_by_day)
