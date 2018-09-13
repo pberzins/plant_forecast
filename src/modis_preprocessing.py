@@ -14,15 +14,15 @@ def cast_array_to_csv(timestamp_array, ndvi_array, product, tile):
     NDVI is a 3d array
     """
     df = pd.DataFrame()
-    df['capture_date']= timestamp_array
-    df['product']= product
-    df['tile_id']= tile
-    df['ndvi']= ndvi_array
+    df['capture_date'] = timestamp_array
+    df['product'] = product
+    df['tile_id'] = tile
+    df['ndvi'] = ndvi_array
 
     df['capture_date'] = pd.to_datetime(df['capture_date'])
-    df['product']=df['product'].astype(str)
-    df['tile_id']=df['tile_id'].astype(str)
-    df['ndvi']=df['ndvi']
+    df['product'] = df['product'].astype(str)
+    df['tile_id'] = df['tile_id'].astype(str)
+    df['ndvi'] = df['ndvi']
     return df
 
 def cast_csv_to_postgres(path_to_file, db_name, table_name, loc='localhost'):
@@ -42,7 +42,7 @@ def cast_csv_to_postgres(path_to_file, db_name, table_name, loc='localhost'):
                                 tile_id text,
                                 ndvi integer[][]);"""
 
-    upload_data_command= f"""COPY {table_name}
+    upload_data_command = f"""COPY {table_name}
                                 FROM '{path_to_file}'
                                 csv header;"""
 
@@ -60,13 +60,13 @@ def get_weather_from_sql(start_date=2013, end_date=2014,meta_data=None, state='N
     one_state=meta_data[meta_data['state']==state]
     clause = tuple(one_state['station_id'].values)
 
-    conn= pg2.connect(dbname='weather', host='localhost')
+    conn = pg2.connect(dbname='weather', host='localhost')
     cur = conn.cursor()
 
-    date_list= list(range(start_date,end_date))
+    date_list = list(range(start_date,end_date))
     empty_list = []
     for year in date_list:
-        start= time.time()
+        start = time.time()
         print(f'Getting weather data from year: {year}')
         table_name = 'w_'+str(year)[-2:]
         cur.execute(f'SELECT * from {table_name};')
@@ -77,13 +77,13 @@ def get_weather_from_sql(start_date=2013, end_date=2014,meta_data=None, state='N
         #wdf = wdf.set_index('measurement_date')
         #wdf.drop(columns=['index'], inplace=True)
         empty_list.append(np.array(data))
-        end= time.time()-start
+        end = time.time()-start
         print(f'Weather for year {year} collectd in {end} seconds')
     conn.close()
     return np.concatenate(np.array(empty_list))
 
 def prepare_weather_data_for_merge(df):
-    wdf= pd.DataFrame(df, columns=['index','station_id','measurement_date','measurement_type', 'measurement_flag'])
+    wdf = pd.DataFrame(df, columns=['index','station_id','measurement_date','measurement_type', 'measurement_flag'])
     wdf = wdf.set_index('measurement_date')
     wdf.drop(columns=['index'], inplace=True)
     wdf.index = pd.to_datetime(wdf.index)
@@ -94,17 +94,17 @@ def get_average_per_state(meta_data,weather_data, state):
     """Takes in the meta_data_df, and weather_data, and a state,
         returns averages per state on a julian day basis
     """
-    one_state=meta_data[meta_data['state']==state]
+    one_state = meta_data[meta_data['state']==state]
 
     state_set = set(one_state['station_id'])
-    weather_set=set(weather_data['station_id'])
+    weather_set = set(weather_data['station_id'])
     intersection_list = list(weather_set& state_set)
 
     print(f'There are {len(intersection_list)} stations in the state of {state}')
 
-    all_stations_in_state= weather_data[weather_data['station_id'].isin(intersection_list)]
+    all_stations_in_state = weather_data[weather_data['station_id'].isin(intersection_list)]
     pivoted = pd.pivot_table(all_stations_in_state,index=['station_id','measurement_date'], columns='measurement_type', values='measurement_flag')
-    grouped_by_day= pivoted.groupby('measurement_date').mean()
+    grouped_by_day = pivoted.groupby('measurement_date').mean()
 
     return grouped_by_day
 
@@ -118,8 +118,8 @@ def make_coordinate_array(data,geom):
         tupel = pf.pixel2coord(row,column,geom)
         lat_list.append(tupel)
         print(f'calculated in {time.time()-start} seconds!")
-        counter+=1
-    latitude_array= np,array(lat_list)
+        counter += 1
+    latitude_array = np,array(lat_list)
     return latitude_array
 
 if __name__ == "__main__":
