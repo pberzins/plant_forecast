@@ -53,8 +53,8 @@ class PlantForecast():
                 db_name= The name of the PostGRESQL database
                 host= Who is hosting the server
                 """
-                self.tiff_path= tiff_files_path
-                self.meta_data_path= meta_data_path
+                self.tiff_path = tiff_files_path
+                self.meta_data_path = meta_data_path
                 self.db_name = db_name
                 self.host = host
                 return None
@@ -74,7 +74,7 @@ class PlantForecast():
                                header=None,
                                names=['station_id', 'latitude', 'longitude', 'elevation', 'state'])
         self.meta_data = df
-        self.idfinder= self.station_id_lookup(df)
+        self.idfinder = self.station_id_lookup(df)
 
         return self
 
@@ -86,25 +86,25 @@ class PlantForecast():
         """
         if preloaded == True:
             print(f'Preloading from path: {preloaded_path}')
-            df= pd.read_csv(preloaded_path)
+            df = pd.read_csv(preloaded_path)
             df = df.set_index('measurement_date')
             df.index = pd.to_datetime(df.index)
             self.ndvi = df
             return self
 
         else:
-            self.geom_query= self.set_geometry()
-            self.ndvi= self.modis_powerhouse(self.tiff_path)
+            self.geom_query = self.set_geometry()
+            self.ndvi = self.modis_powerhouse(self.tiff_path)
             return self
 
     def set_geometry(self):
         """Takes in self, returns the geometry of the useful pixels, in an SQL
         Query when looking for weather stations with the tiles useful area.
         """
-        quality_path= self.tiff_path + 'quality_tiff/'
+        quality_path = self.tiff_path + 'quality_tiff/'
 
-        quality_files= (list(f for f in os.listdir(quality_path) if f.endswith('.' + 'tif')))
-        path_to_file= quality_path + quality_files[0]
+        quality_files = (list(f for f in os.listdir(quality_path) if f.endswith('.' + 'tif')))
+        path_to_file = quality_path + quality_files[0]
 
         quality = gdal.Open(path_to_file)
         q_band = quality.GetRasterBand(1)
@@ -112,7 +112,7 @@ class PlantForecast():
         geo = quality.GetGeoTransform()
         self.geo = geo
 
-        tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo= self.get_bounding_box(q_arr,geo)
+        tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo = self.get_bounding_box(q_arr,geo)
         return self.make_sql_query(tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo)
 
     def make_sql_query(self, tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo):
@@ -134,24 +134,24 @@ class PlantForecast():
         #bottom right lat/long
         br_la_lo = self.pixel2coord(Q_arr.shape[1],Q_arr.shape[0], geo)
 
-        top_right=self.get_top_right_corner(Q_arr)
+        top_right = self.get_top_right_corner(Q_arr)
         #top right lat/long
-        tr_la_lo= self.pixel2coord(top_right,0,geo)
+        tr_la_lo = self.pixel2coord(top_right,0,geo)
 
         bottom_left = self.get_bottom_left_corner(Q_arr)
         #bottom left lat/long
-        bl_la_lo= self.pixel2coord(bottom_left, Q_arr.shape[0],geo)
+        bl_la_lo = self.pixel2coord(bottom_left, Q_arr.shape[0],geo)
 
         return tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo
 
     def pixel2coord(self, x, y,geo):
         """Returns global coordinates from pixel x, y coords"""
-        xoff= geo[0]
-        yoff= geo[3]
-        a= geo[1]
-        b= geo[2]
-        d= geo[4]
-        e=geo[5]
+        xoff = geo[0]
+        yoff = geo[3]
+        a = geo[1]
+        b = geo[2]
+        d = geo[4]
+        e =geo[5]
 
         xp = a * x + b * y + xoff
         yp = d * x + e * y + yoff
@@ -163,17 +163,17 @@ class PlantForecast():
         counter = 0
         for flag in Q_arr[0]:
             if flag != -1:
-                counter+=1
+                counter += 1
             if flag == -1:
                 return counter
 
     def get_bottom_left_corner(self, Q_arr):
         """Get the index of the bottom left Corner
         """
-        counter= 0
+        counter = 0
         for flag in Q_arr[-1]:
             if flag == -1:
-                counter+=1
+                counter += 1
             if flag != -1:
                 return counter
 
@@ -188,10 +188,10 @@ class PlantForecast():
         """
         if preloaded == True and preloaded_path!= None:
             print(f'Preloading from path: {preloaded_path}')
-            df= pd.read_csv(preloaded_path)
+            df = pd.read_csv(preloaded_path)
             df = df.set_index('measurement_date')
             df.index = pd.to_datetime(df.index)
-            self.weather= df
+            self.weather = df
             return self
 
         else:
@@ -210,9 +210,9 @@ class PlantForecast():
             stations = tuple(map(' '.join, data))
 
 
-            table_list= ['w_00','w_01','w_02','w_03','w_04', 'w_05', 'w_06','w_07','w_08','w_09','w_10', 'w_11','w_12','w_13','w_14','w_15','w_16','w_17']
+            table_list = ['w_00','w_01','w_02','w_03','w_04', 'w_05', 'w_06','w_07','w_08','w_09','w_10', 'w_11','w_12','w_13','w_14','w_15','w_16','w_17']
 
-            data_frame_list= []
+            data_frame_list = []
             for e in table_list:
                 start = time.time()
 
@@ -227,7 +227,7 @@ class PlantForecast():
                 print(f"Got data from table: {e} in about {time.time()-start} seconds!")
             conn.close()
             df = pd.concat(data_frame_list)
-            self.weather=df
+            self.weather = df
             return self
 
     def merge_modis_weather(self, longterm=100):
@@ -237,9 +237,9 @@ class PlantForecast():
         """
         df = self.time_delta_merge(self.ndvi,self.weather, longterm)
         #print(df.columns)
-        df['intercept']=1
+        df['intercept'] = 1
         df.dropna(inplace=True)
-        self.combined= df
+        self.combined = df
         return self
 
     def train_test_split_by_year(self,test_years=[2015,2016,2017],train_years=list(range(2000,2015))):
@@ -248,10 +248,10 @@ class PlantForecast():
         OUTPUT:
         Training DataFrame and Testing DataFrame
         """
-        test_df=self.combined[self.combined.index.year.isin(test_years)]
-        train_df=self.combined[self.combined.index.year.isin(train_years)]
+        test_df = self.combined[self.combined.index.year.isin(test_years)]
+        train_df = self.combined[self.combined.index.year.isin(train_years)]
         self.test = test_df
-        self.train= train_df
+        self.train = train_df
         return train_df, test_df
 
 
@@ -265,21 +265,21 @@ class PlantForecast():
 
         """
         satellite_data = ndvi_df.index.values
-        ndvi_weather_aggregate_list =[]
+        ndvi_weather_aggregate_list = []
 
         print(f'You are lagging for {longterm} days')
 
         for e in satellite_data[1:]:
-            ndvi_value_for_date= ndvi_df[ndvi_df.index==e]['ndvi'].values
+            ndvi_value_for_date = ndvi_df[ndvi_df.index==e]['ndvi'].values
 
             rng = pd.date_range(end=e, periods=16, freq='D')
             subset = weather_df[weather_df.index.isin(rng)]
-            mean= subset.mean().values
+            mean = subset.mean().values
 
-            precip_range= pd.date_range(end=e, periods=longterm, freq='D')
-            precip_subset= weather_df[weather_df.index.isin(precip_range)]
+            precip_range = pd.date_range(end=e, periods=longterm, freq='D')
+            precip_subset = weather_df[weather_df.index.isin(precip_range)]
 
-            long_mean=precip_subset.mean().values
+            long_mean = precip_subset.mean().values
             #long_sum=precip_subset.sum().values
 
 #Adding 2731 was done to convert .01 degrees c into degrees K, removed negatives
@@ -291,8 +291,8 @@ class PlantForecast():
 
             ndvi_weather_aggregate_list.append(datum)
 
-        data= np.array(ndvi_weather_aggregate_list)[:,1:]
-        indi= np.array(ndvi_weather_aggregate_list)[:,0]
+        data = np.array(ndvi_weather_aggregate_list)[:,1:]
+        indi = np.array(ndvi_weather_aggregate_list)[:,0]
 
         df = pd.DataFrame(data=data, index=indi,
                             columns=['PRCP','SNOW','SNOWD','TMAX','TMIN',
@@ -309,7 +309,7 @@ class PlantForecast():
         PRCP|SNOW|SNWD|TMAX|TMIN with values in corresponding "measurment_flag" as floats
         """
         pivoted = pd.pivot_table(df,index=['station_id','measurement_date'], columns='measurement_type', values='measurement_flag')
-        grouped_by_day= pivoted.groupby('measurement_date').mean()
+        grouped_by_day = pivoted.groupby('measurement_date').mean()
 
         #return get_julian_day_column(grouped_by_day)
         return grouped_by_day
@@ -321,11 +321,11 @@ class PlantForecast():
         A Data frame with index of 'measurement_date',
 
         """
-        wdf= pd.DataFrame(df, columns=['index','station_id','measurement_date','measurement_type', 'measurement_flag'])
+        wdf = pd.DataFrame(df, columns=['index','station_id','measurement_date','measurement_type', 'measurement_flag'])
         wdf = wdf.set_index('measurement_date')
         wdf.drop(columns=['index'], inplace=True)
         wdf.index = pd.to_datetime(wdf.index)
-        wdf['measurement_flag']=wdf['measurement_flag'].astype(float)
+        wdf['measurement_flag'] = wdf['measurement_flag'].astype(float)
         return wdf
 
     def modis_powerhouse(self,path):
@@ -334,43 +334,43 @@ class PlantForecast():
             2.) quality_tiff
         Takes in this folder and casts NDVI values and Quality Values into 2d arrays
         """
-        quality_folder_path= path+ 'quality_tiff/'
-        ndvi_folder_path= path+ 'ndvi_tiff/'
-        file_list= os.listdir(ndvi_folder_path)
+        quality_folder_path = path+ 'quality_tiff/'
+        ndvi_folder_path = path+ 'ndvi_tiff/'
+        file_list = os.listdir(ndvi_folder_path)
 
-        ndvi_file_set=  set(list(f for f in os.listdir(ndvi_folder_path) if f.endswith('.' + 'tif')))
-        quality_file_set= set(list(f for f in os.listdir(quality_folder_path) if f.endswith('.' + 'tif')))
+        ndvi_file_set =  set(list(f for f in os.listdir(ndvi_folder_path) if f.endswith('.' + 'tif')))
+        quality_file_set = set(list(f for f in os.listdir(quality_folder_path) if f.endswith('.' + 'tif')))
 
         cross_checked = sorted(ndvi_file_set&quality_file_set)
         array_list = []
         for f in cross_checked:
-            start= time.time()
-            product= f[:7]
-            year= f[9:13]
-            julian_day= f[13:16]
-            tile= f[17:23]
+            start = time.time()
+            product = f[:7]
+            year = f[9:13]
+            julian_day = f[13:16]
+            tile = f[17:23]
 
-            ndvi_file= ndvi_folder_path+f
-            quality_file= quality_folder_path+f
+            ndvi_file = ndvi_folder_path+f
+            quality_file = quality_folder_path+f
 
             ndvi = gdal.Open(ndvi_file)
             n_band = ndvi.GetRasterBand(1)
             n_arr = n_band.ReadAsArray()
             geotransform = ndvi.GetGeoTransform()
-            ndvi= None
+            ndvi = None
 
             #return geotransform
 
             quality = gdal.Open(quality_file)
             q_band = quality.GetRasterBand(1)
             q_arr = q_band.ReadAsArray()
-            quality= None
+            quality = None
 
             data=self.quality_screen(q_arr, n_arr)
-            return data
+            #return data
 
-            av=data[data!=-3000].mean()
-            date_time=self.JulianDate_to_MMDDYYY(int(year),int(julian_day))
+            av=data[data != -3000].mean()
+            date_time = self.JulianDate_to_MMDDYYY(int(year),int(julian_day))
 
             date = np.full(data.shape, date_time)
 
@@ -393,7 +393,7 @@ class PlantForecast():
         OUTPUTS:
             A matrix with all quality flags != 1 set to -3000 (no_fill value)
         """
-        ndvi[quality!=0]= -3000
+        ndvi[quality!=0] = -3000
         return ndvi
 
     def JulianDate_to_MMDDYYY(self,y,jd):
@@ -414,12 +414,12 @@ class PlantForecast():
         returns a dictionary with the keys as station_id,
         lat, long, elevation, and state as values.
         """
-        station_dict= defaultdict()
+        station_dict = defaultdict()
         values = df.values
         for row in values:
             stationid = row[0]
-            data= row[1:]
-            station_dict[stationid]=data
+            data = row[1:]
+            station_dict[stationid] = data
         return station_dict
 
 
