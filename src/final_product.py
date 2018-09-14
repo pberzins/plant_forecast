@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
+from collections import defaultdict
 
 import psycopg2 as pg2
 import sqlalchemy
@@ -22,22 +23,22 @@ import src.read_weather as rw
 
 class PlantForecast():
     """ EXAMPLE:
-        pf = PlantForecast()
-        pf.load_metadata()
-        pf.load_ndvi()
-        pf.load_weather()
-        pf.merge_modis_weather()
+            pf = PlantForecast()
+            pf.load_metadata()
+            pf.load_ndvi()
+            pf.load_weather()
+            pf.merge_modis_weather()
 
-        train_df, test_df = pf.train_test_split_by_year([2015,2016,2017])
+            train_df, test_df = pf.train_test_split_by_year([2015,2016,2017])
 
-        ***-__-__-__-***
+            ***-__-__-__-***
 
-        Model what you want to find!
-        ***-__-__-__-***
+            Model what you want to find!
+            ***-__-__-__-***
 
-        Graph Results!
+            Graph Results!
 
-        ***
+            ***-__-__-__-***
     """
 
     def __init__(self,
@@ -47,7 +48,7 @@ class PlantForecast():
                  host='localhost'):
         """INPUTS:
         tiff_files_path: Path to where you have two folders of tiff files:
-            -One folder should be called "NDVI", and the other "Quality"
+                -One folder should be called "NDVI", and the other "Quality"
         meta_data_path: Path to where ghcnd-stations.txt is downloaded
         db_name= The name of the PostGRESQL database
         host= Who is hosting the server
@@ -79,9 +80,9 @@ class PlantForecast():
 
     def load_ndvi(self, preloaded=True, preloaded_path='preloaded_data/2000_2017_ndvi.csv'):
         """INPUT: self
-            OUTPUT:
-            A Pandas DataFrame with columns:
-            Date| NDVI
+                OUTPUT:
+                A Pandas DataFrame with columns:
+                Date| NDVI
         """
         if preloaded == True:
             print(f'Preloading from path: {preloaded_path}')
@@ -104,6 +105,7 @@ class PlantForecast():
 
         quality_files = (list(f for f in os.listdir(
             quality_path) if f.endswith('.' + 'tif')))
+
         path_to_file = quality_path + quality_files[0]
 
         quality = gdal.Open(path_to_file)
@@ -118,7 +120,7 @@ class PlantForecast():
 
     def make_sql_query(self, tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo):
         """ Does some string manipulation to the the the bounding coordinates
-            to fit into an SQL Query, to make a geometry object
+                to fit into an SQL Query, to make a geometry object
         """
         tl = ' '.join(map(str, tl_la_lo))
         tr = ' '.join(map(str, tr_la_lo))
@@ -180,12 +182,12 @@ class PlantForecast():
 
     def load_weather(self, preloaded=True, preloaded_path='preloaded_data/2000_2017_weather.csv'):
         """INPUTS:
-            preloaded: True or False, if there is a preloaded CSV
-            preloaded_path: Path to CSV with columns:
-            measurement_date|PRCP|SNOW|SNWD|TMAX|TMIN
-            If both are none, it will pull from PostGreSQL
-            OUTPUT:
-            A Pandas Data Frame named self.weather
+                preloaded: True or False, if there is a preloaded CSV
+                preloaded_path: Path to CSV with columns:
+                measurement_date|PRCP|SNOW|SNWD|TMAX|TMIN
+                If both are none, it will pull from PostGreSQL
+                OUTPUT:
+                A Pandas Data Frame named self.weather
         """
         if preloaded == True and preloaded_path != None:
             print(f'Preloading from path: {preloaded_path}')
@@ -202,9 +204,9 @@ class PlantForecast():
             conn.autocommit = True
 
             get_weather_in_tile_command = f"""SELECT station_id
-                                            FROM station_metadata
-                                            WHERE ST_Contains(ST_GeomFromText('POLYGON(
-                                            ({self.geom_query}))',4326),geom) limit 1000;"""
+											FROM station_metadata
+											WHERE ST_Contains(ST_GeomFromText('POLYGON(
+											({self.geom_query}))',4326),geom) limit 1000;"""
 
             cur.execute(get_weather_in_tile_command)
             data = list(cur.fetchall())
@@ -218,7 +220,7 @@ class PlantForecast():
                 start = time.time()
 
                 get_weather_command = f"""SELECT * FROM {e}
-                                        WHERE station_id in {stations};"""
+										WHERE station_id in {stations};"""
                 cur.execute(get_weather_command)
                 weather = cur.fetchall()
 
@@ -269,7 +271,7 @@ class PlantForecast():
         satellite_data = ndvi_df.index.values
         ndvi_weather_aggregate_list = []
 
-        print(f'You are lagging for {longterm} days')
+        # print(f'You are lagging for {longterm} days')
 
         for e in satellite_data[1:]:
             ndvi_value_for_date = ndvi_df[ndvi_df.index == e]['ndvi'].values
@@ -282,14 +284,10 @@ class PlantForecast():
             precip_subset = weather_df[weather_df.index.isin(precip_range)]
 
             long_mean = precip_subset.mean().values
-            # long_sum=precip_subset.sum().values
 
-# Adding 2731 was done to convert .01 degrees c into degrees K, removed negatives
             datum = np.array([e, mean[0], mean[1], mean[2], mean[3]+2731, mean[4]+2731,
                               long_mean[0], long_mean[1], long_mean[2],
                               long_mean[3]+2731, long_mean[4]+2731, ndvi_value_for_date[0]])
-
-            # ,long_sum[0],long_sum[1],long_sum[2],ndvi_value_for_date[0]])
 
             ndvi_weather_aggregate_list.append(datum)
 
@@ -299,7 +297,7 @@ class PlantForecast():
         df = pd.DataFrame(data=data, index=indi,
                           columns=['PRCP', 'SNOW', 'SNOWD', 'TMAX', 'TMIN',
                                    'LT_precip', 'LT_snow', 'LT_snowd', 'LT_tmax',
-                                   'LT_tmin', 'NDVI'])
+                                                           'LT_tmin', 'NDVI'])
         # 's_precip','s_snow','s_snowd','NDVI'])
 
         return df
@@ -327,7 +325,8 @@ class PlantForecast():
 
         """
         wdf = pd.DataFrame(df, columns=[
-                           'index', 'station_id', 'measurement_date', 'measurement_type', 'measurement_flag'])
+            'index', 'station_id', 'measurement_date',
+            'measurement_type', 'measurement_flag'])
         wdf = wdf.set_index('measurement_date')
         wdf.drop(columns=['index'], inplace=True)
         wdf.index = pd.to_datetime(wdf.index)
@@ -336,8 +335,8 @@ class PlantForecast():
 
     def modis_powerhouse(self, path):
         """Takes in a path to a folder where there are two folders:
-            1.) ndvi_tiff
-            2.) quality_tiff
+                1.) ndvi_tiff
+                2.) quality_tiff
         Takes in this folder and casts NDVI values and Quality Values into 2d arrays
         """
         quality_folder_path = path + 'quality_tiff/'
@@ -396,10 +395,10 @@ class PlantForecast():
 
     def quality_screen(self, quality, ndvi):
         """INPUTS
-            quality= 2D array
-            ndvi = 2d array
+                quality= 2D array
+                ndvi = 2d array
         OUTPUTS:
-            A matrix with all quality flags != 1 set to -3000 (no_fill value)
+                A matrix with all quality flags != 1 set to -3000 (no_fill value)
         """
         ndvi[quality != 0] = -3000
         return ndvi
