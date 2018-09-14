@@ -1,12 +1,17 @@
 import numpy as np
 import pandas as pd
+import numpy.ma as ma
+
 import gdal
 import calendar
-import os
-import numpy.ma as ma
 import time
 import datetime
+
+import os
 import psycopg2 as pg2
+
+from src.final_product import PlantForecast
+
 
 
 def cast_array_to_csv(timestamp_array, ndvi_array, product, tile):
@@ -122,8 +127,8 @@ def make_coordinate_array(data, geom):
     lat_list = []
     long_list = []
     counter = 0
-    for row in range(0, len(sample_data)):
-        for column in range(0, len(sample_data[0])):
+    for row in range(0, len(data)):
+        for column in range(0, len(data[0])):
             start = time.time()
             tupel = pf.pixel2coord(row, column, geom)
             lat_list.append(tupel)
@@ -134,4 +139,5 @@ def make_coordinate_array(data, geom):
 
 
 if __name__ == "__main__":
+    pf = PlantForecast()
     pass
