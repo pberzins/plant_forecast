@@ -90,6 +90,8 @@ def plot_over_time(X_train, X_test, y_train, y_test):
     ax.legend(loc=0, prop={'size': 16})
     ax2.legend(loc=1)
     ax3.legend(loc=2)
+    fig.tight_layout()
+
 
     plt.show()
 
@@ -109,6 +111,7 @@ def graph_lag_mse(range_list, gbr_mse_list, rf_mse_list, ridge_mse_list, gbr_sco
     ax.set_ylabel('Mean Squared Error')
     ax.set_xlabel('Number of Lagged Days')
     ax.legend(prop={'size': 14})
+    fig.tight_layout()
 
     plt.show()
 

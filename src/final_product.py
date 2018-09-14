@@ -341,7 +341,6 @@ class PlantForecast():
         """
         quality_folder_path = path + 'quality_tiff/'
         ndvi_folder_path = path + 'ndvi_tiff/'
-        file_list = os.listdir(ndvi_folder_path)
 
         ndvi_file_set = set(list(f for f in os.listdir(
             ndvi_folder_path) if f.endswith('.' + 'tif')))
@@ -352,10 +351,10 @@ class PlantForecast():
         array_list = []
         for f in cross_checked:
             start = time.time()
-            product = f[:7]
+            # product = f[:7]
             year = f[9:13]
             julian_day = f[13:16]
-            tile = f[17:23]
+            # tile = f[17:23]
 
             ndvi_file = ndvi_folder_path+f
             quality_file = quality_folder_path+f
@@ -363,7 +362,7 @@ class PlantForecast():
             ndvi = gdal.Open(ndvi_file)
             n_band = ndvi.GetRasterBand(1)
             n_arr = n_band.ReadAsArray()
-            geotransform = ndvi.GetGeoTransform()
+            # geotransform = ndvi.GetGeoTransform()
             ndvi = None
 
             # return geotransform
