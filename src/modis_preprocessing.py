@@ -10,8 +10,7 @@ import datetime
 import os
 import psycopg2 as pg2
 
-from src.final_product import PlantForecast
-
+#from src.final_product import PlantForecast
 
 
 def cast_array_to_csv(timestamp_array, ndvi_array, product, tile):
@@ -123,21 +122,5 @@ def get_average_per_state(meta_data, weather_data, state):
     return grouped_by_day
 
 
-def make_coordinate_array(data, geom):
-    lat_list = []
-    long_list = []
-    counter = 0
-    for row in range(0, len(data)):
-        for column in range(0, len(data[0])):
-            start = time.time()
-            tupel = pf.pixel2coord(row, column, geom)
-            lat_list.append(tupel)
-            print(f'calculated in {time.time()-start} seconds!')
-            counter += 1
-    latitude_array = np.array(lat_list)
-    return latitude_array
-
-
 if __name__ == "__main__":
-    pf = PlantForecast()
     pass
