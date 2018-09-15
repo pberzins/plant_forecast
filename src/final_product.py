@@ -402,18 +402,18 @@ class PlantForecast():
         ndvi[quality != 0] = -3000
         return ndvi
 
-    def JulianDate_to_MMDDYYY(self, y, jd):
+    def JulianDate_to_MMDDYYY(self, year, julian_day):
         """INPUTS:
         Takes in a year and Julian Date of year
         OUTPUS:
         Returns a date time object
         """
         month = 1
-        day = 0
-        while jd - calendar.monthrange(y, month)[1] > 0 and month <= 12:
-            jd = jd - calendar.monthrange(y, month)[1]
+        #day = 0
+        while julian_day - calendar.monthrange(year, month)[1] > 0 and month <= 12:
+            julian_day = julian_day - calendar.monthrange(year, month)[1]
             month = month + 1
-        return datetime.date(y, month, jd)
+        return datetime.date(year, month, julian_day)
 
     def station_id_lookup(self, df):
         """Takes in a data frame
@@ -427,6 +427,21 @@ class PlantForecast():
             data = row[1:]
             station_dict[stationid] = data
         return station_dict
+
+
+def make_coordinate_array(data, geom):
+    lat_list = []
+    long_list = []
+    counter = 0
+    for row in range(0, len(data)):
+        for column in range(0, len(data[0])):
+            start = time.time()
+            tupel = PlantForecast.pixel2coord(row, column, geom)
+            lat_list.append(tupel)
+            print(f'calculated in {time.time()-start} seconds!')
+            counter += 1
+    latitude_array = np.array(lat_list)
+    return latitude_array
 
 
 if __name__ == "__main__":
