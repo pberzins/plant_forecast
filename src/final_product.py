@@ -17,7 +17,7 @@ import gdal
 import os
 import csv
 
-import src.modis_preprocessing as mpre
+# import modis_preprocessing as mpre
 import src.read_weather as rw
 
 
@@ -72,7 +72,9 @@ class PlantForecast():
                          # Missing elevation is noted as -999.9
                          na_values=[-999.9],
                          header=None,
-                         names=['station_id', 'latitude', 'longitude', 'elevation', 'state'])
+                         names=['station_id', 'latitude',
+                                'longitude', 'elevation', 'state'],
+                         engine='python')
         self.meta_data = df
         self.idfinder = self.station_id_lookup(df)
 
@@ -120,13 +122,14 @@ class PlantForecast():
 
     def make_sql_query(self, tl_la_lo, tr_la_lo, br_la_lo, bl_la_lo):
         """ Does some string manipulation to the the the bounding coordinates
-                to fit into an SQL Query, to make a geometry object
+            to fit into an SQL Query, to make a geometry object
         """
         tl = ' '.join(map(str, tl_la_lo))
         tr = ' '.join(map(str, tr_la_lo))
         br = ' '.join(map(str, br_la_lo))
         bl = ' '.join(map(str, bl_la_lo))
-        return f'{tl}, {tr}, {br}, {bl}, {tl}'
+        query = f'{tl}, {tr}, {br}, {bl}, {tl}'
+        return query
 
     def get_bounding_box(self, Q_arr, geo):
         """Takes in a quality array, and returns the lat long of the:
@@ -429,9 +432,10 @@ class PlantForecast():
         return station_dict
 
 
+"""
 def make_coordinate_array(data, geom):
     lat_list = []
-    long_list = []
+    # long_list = []
     counter = 0
     for row in range(0, len(data)):
         for column in range(0, len(data[0])):
@@ -443,6 +447,7 @@ def make_coordinate_array(data, geom):
     latitude_array = np.array(lat_list)
     return latitude_array
 
-
+"""
 if __name__ == "__main__":
-    pass
+    pf = PlantForecast()
+    print("hello world!")
