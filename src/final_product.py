@@ -18,7 +18,7 @@ import os
 import csv
 
 # import modis_preprocessing as mpre
-import src.read_weather as rw
+# import read_weather as rw
 
 
 class PlantForecast():

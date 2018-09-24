@@ -64,7 +64,7 @@ def cast_csv_to_postgres(path_to_file, db_name, table_name, loc='localhost'):
 def get_weather_from_sql(start_date=2013, end_date=2014, meta_data=None, state='NM'):
     """Takes in a database, and gets something out of it
     """
-    one_state = meta_data[meta_data['state'] == state]
+   # one_state = meta_data[meta_data['state'] == state]
 #  clause = tuple(one_state['station_id'].values)
 
     conn = pg2.connect(dbname='weather', host='localhost')
