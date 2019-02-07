@@ -59,8 +59,9 @@ Documentation can be found here: [PostGIS](https://postgis.net/)
 ## QGIS to Visualize Results:
 QGIS is its own beast, if you have ever used ARCGis and been frustrated how clunky it is, QGIS is the tool for you! QGIS allows you connect directly to a PostGIS database and visualize results. This project does not teach you much about QGIS but it is important to know that it exists, and you will not regret knowing your way around this application.
 More information can be found here: [QGIS](https://qgis.org/en/site/)
+      
 
-![Picture](https://raw.githubusercontent.com/pberzins/plant_forecast/master/pictures/Screen%20Shot%202018-09-07%20at%2011.10.22%20PM.png)
+![Picture](https://raw.githubusercontent.com/pberzins/plant_forecast/master/pictures/tile_america.png)
 
 ## Modeling
 Modeling was done using SciKit Learn to build a variety of models in order to compare when and where specific models are appropriate measures.
